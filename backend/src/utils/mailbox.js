@@ -1,8 +1,10 @@
-import { nanoid } from 'nanoid';
+import { customAlphabet, nanoid } from 'nanoid';
 import { config } from '../config/index.js';
 
+const randomPrefixGenerator = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 10);
+
 export function generateRandomPrefix() {
-    return nanoid(10);
+    return randomPrefixGenerator();
 }
 
 export function generateMailboxId() {
@@ -11,7 +13,7 @@ export function generateMailboxId() {
 
 export function generateMailboxAddress(prefix, domain) {
     const finalPrefix = prefix || generateRandomPrefix();
-    const finalDomain = domain || config.email.defaultDomain;
+    const finalDomain = (domain || config.email.defaultDomain).toLowerCase();
     if (!config.email.domains.includes(finalDomain)) {
         throw new Error(`无效的域名: ${finalDomain}`);
     }
@@ -37,7 +39,7 @@ export function extractMailboxId(emailAddress) {
 }
 
 export function isValidDomain(domain) {
-    return config.email.domains.includes(domain);
+    return config.email.domains.includes((domain || '').toLowerCase());
 }
 
 export function isValidEmail(email) {

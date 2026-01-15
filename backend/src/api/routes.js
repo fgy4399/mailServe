@@ -11,19 +11,21 @@ router.get('/domains', async (req, res) => {
 
 router.post('/mailbox/check-availability', async (req, res) => {
     try {
-        const { prefix, domain } = req.body;
+        const { prefix, domain } = req.body || {};
         if (prefix && !isValidPrefix(prefix)) {
             return res.status(400).json({ success: false, error: '前缀格式无效' });
         }
-        const finalDomain = domain || config.email.defaultDomain;
+        const finalDomain = (domain || config.email.defaultDomain).toLowerCase();
         if (!isValidDomain(finalDomain)) {
             return res.status(400).json({ success: false, error: '无效的域名' });
         }
         if (!prefix) {
             return res.json({ success: true, data: { available: true, address: null } });
         }
-        const exists = await redisClient.addressExists(`${prefix}@${finalDomain}`);
-        res.json({ success: true, data: { available: !exists, address: `${prefix}@${finalDomain}` } });
+        const finalPrefix = prefix.toLowerCase();
+        const address = `${finalPrefix}@${finalDomain}`;
+        const exists = await redisClient.addressExists(address);
+        res.json({ success: true, data: { available: !exists, address } });
     } catch (error) {
         res.status(500).json({ success: false, error: '检查失败' });
     }
@@ -32,7 +34,7 @@ router.post('/mailbox/check-availability', async (req, res) => {
 router.post('/mailbox/create', async (req, res) => {
     try {
         const { prefix, domain } = req.body || {};
-        const finalDomain = domain || config.email.defaultDomain;
+        const finalDomain = (domain || config.email.defaultDomain).toLowerCase();
         if (!isValidDomain(finalDomain)) {
             return res.status(400).json({ success: false, error: '无效的域名' });
         }
@@ -41,7 +43,7 @@ router.post('/mailbox/create', async (req, res) => {
             if (!isValidPrefix(prefix)) {
                 return res.status(400).json({ success: false, error: '前缀格式无效' });
             }
-            finalPrefix = prefix;
+            finalPrefix = prefix.toLowerCase();
             isCustomPrefix = true;
         } else {
             finalPrefix = generateRandomPrefix();

@@ -1,6 +1,11 @@
 import { createClient } from 'redis';
 import { config } from '../config/index.js';
 
+function normalizeAddress(address) {
+    if (typeof address !== 'string') return '';
+    return address.trim().toLowerCase();
+}
+
 class RedisClient {
     constructor() {
         this.client = null;
@@ -21,13 +26,22 @@ class RedisClient {
     }
 
     async addressExists(address) {
-        return (await this.client.exists(`address:${address}`)) === 1;
+        const normalized = normalizeAddress(address);
+        if (!normalized) return false;
+        const existsCount = await this.client.exists(
+            `address:${normalized}`,
+            ...(address && address !== normalized ? [`address:${address}`] : []),
+        );
+        return existsCount > 0;
     }
 
     async createMailbox(mailboxId, data) {
         const multi = this.client.multi();
         multi.setEx(`mailbox:${mailboxId}`, config.email.ttl, JSON.stringify(data));
-        multi.setEx(`address:${data.address}`, config.email.ttl, mailboxId);
+        const normalizedAddress = normalizeAddress(data.address);
+        if (normalizedAddress) {
+            multi.setEx(`address:${normalizedAddress}`, config.email.ttl, mailboxId);
+        }
         await multi.exec();
         return mailboxId;
     }
@@ -38,7 +52,12 @@ class RedisClient {
     }
 
     async getMailboxIdByAddress(address) {
-        return await this.client.get(`address:${address}`);
+        const normalized = normalizeAddress(address);
+        if (!normalized) return null;
+        const normalizedValue = await this.client.get(`address:${normalized}`);
+        if (normalizedValue) return normalizedValue;
+        if (address && address !== normalized) return await this.client.get(`address:${address}`);
+        return null;
     }
 
     async getMailboxByAddress(address) {
@@ -51,7 +70,11 @@ class RedisClient {
         if (mailbox) {
             const multi = this.client.multi();
             multi.del(`mailbox:${mailboxId}`);
-            if (mailbox.address) multi.del(`address:${mailbox.address}`);
+            if (mailbox.address) {
+                const normalized = normalizeAddress(mailbox.address);
+                if (normalized) multi.del(`address:${normalized}`);
+                if (mailbox.address !== normalized) multi.del(`address:${mailbox.address}`);
+            }
             const emailIds = await this.client.lRange(`emails:${mailboxId}`, 0, -1);
             for (const emailId of emailIds) {
                 multi.del(`email:${mailboxId}:${emailId}`);

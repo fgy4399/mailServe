@@ -1,5 +1,16 @@
 import 'dotenv/config';
 
+const emailDomains = (process.env.EMAIL_DOMAINS || 'temp-mail.local')
+    .split(',')
+    .map(d => d.trim().toLowerCase())
+    .filter(d => d.length > 0);
+
+const emailDefaultDomain = (
+    process.env.EMAIL_DEFAULT_DOMAIN ||
+    emailDomains[0] ||
+    'temp-mail.local'
+).trim().toLowerCase();
+
 export const config = {
     port: parseInt(process.env.PORT || '3000', 10),
     smtpPort: parseInt(process.env.SMTP_PORT || '2525', 10),
@@ -21,14 +32,9 @@ export const config = {
 
     // Email - 支持多域名
     email: {
-        domains: (process.env.EMAIL_DOMAINS || 'temp-mail.local')
-            .split(',')
-            .map(d => d.trim())
-            .filter(d => d.length > 0),
-        defaultDomain: process.env.EMAIL_DEFAULT_DOMAIN ||
-            (process.env.EMAIL_DOMAINS || 'temp-mail.local').split(',')[0].trim(),
-        domain: process.env.EMAIL_DEFAULT_DOMAIN ||
-            (process.env.EMAIL_DOMAINS || 'temp-mail.local').split(',')[0].trim(),
+        domains: emailDomains,
+        defaultDomain: emailDefaultDomain,
+        domain: emailDefaultDomain,
         ttl: parseInt(process.env.EMAIL_TTL || '3600', 10),
     },
 
