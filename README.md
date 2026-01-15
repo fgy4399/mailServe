@@ -74,6 +74,18 @@ docker compose restart
 docker compose down
 ```
 
+## CI/CD（Docker Hub）
+
+仓库内置 GitHub Actions 工作流（`.github/workflows/dockerhub.yml`），会在以下场景自动构建并推送镜像到 Docker Hub：
+
+- 推送到 `main`：推送 `latest` + `sha-<commit>` 标签
+- 推送 tag（如 `v3.5.1`）：推送 `v3.5.1`、`3.5.1`、`3.5`、`3` 等标签
+
+在 GitHub 仓库设置中添加：
+
+- Secrets：`DOCKERHUB_USERNAME`、`DOCKERHUB_TOKEN`
+- Variables（可选）：`DOCKERHUB_REPOSITORY`（默认 `mailserve`）
+
 ## 安全提示
 
 - 邮件 HTML 在前端会做基础清理，但仍建议不要用于接收敏感信息。
