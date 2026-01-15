@@ -1,0 +1,10 @@
+# Docker 部署忽略文件
+node_modules
+npm-debug.log
+.env
+.env.local
+.git
+.gitignore
+*.md
+dist
+.vite
