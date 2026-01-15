@@ -81,6 +81,13 @@ docker compose down
 - 推送到 `main`：推送 `latest` + `sha-<commit>` 标签
 - 推送 tag（如 `v3.5.1`）：推送 `v3.5.1`、`3.5.1`、`3.5`、`3` 等标签
 
+发布版本示例：
+
+```bash
+git tag -a v3.5.1 -m "Release v3.5.1"
+git push origin v3.5.1
+```
+
 在 GitHub 仓库设置中添加：
 
 - Secrets：`DOCKERHUB_USERNAME`、`DOCKERHUB_TOKEN`
