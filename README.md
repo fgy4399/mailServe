@@ -78,14 +78,13 @@ docker compose down
 
 仓库内置 GitHub Actions 工作流（`.github/workflows/dockerhub.yml`），会在以下场景自动构建并推送镜像到 Docker Hub：
 
-- 推送到 `main`：仅推送 `latest`
-- 推送 tag（如 `v3.5.1`）：仅推送同名标签 `v3.5.1`
+- 仅在推送 tag（如 `v3.5.2`）时触发：推送 `v3.5.2` + `latest`
 
 发布版本示例：
 
 ```bash
-git tag -a v3.5.1 -m "Release v3.5.1"
-git push origin v3.5.1
+git tag -a v3.5.2 -m "Release v3.5.2"
+git push origin v3.5.2
 ```
 
 在 GitHub 仓库设置中添加：

@@ -2,7 +2,6 @@ name: Docker (Docker Hub)
 
 on:
   push:
-    branches: [main]
     tags:
       - "v*"
   workflow_dispatch:
@@ -36,7 +35,7 @@ jobs:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ vars.DOCKERHUB_REPOSITORY || 'mailserve' }}
           tags: |
             type=ref,event=tag
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v5
