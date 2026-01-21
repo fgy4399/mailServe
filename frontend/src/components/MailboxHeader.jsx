@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function MailboxHeader({ mailbox, connected, onRefresh, onNewMailbox, onReconnect }) {
+function MailboxHeader({ mailbox, connected, onRefresh, onNewMailbox, onReleaseMailbox, actionLoading, onReconnect }) {
     const [copied, setCopied] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [timeLeft, setTimeLeft] = useState('');
@@ -102,13 +102,22 @@ function MailboxHeader({ mailbox, connected, onRefresh, onNewMailbox, onReconnec
                 <div className="flex gap-2">
                     <button
                         onClick={handleRefresh}
-                        disabled={refreshing}
+                        disabled={refreshing || actionLoading}
                         className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition transform ${refreshing ? 'scale-95 opacity-70' : 'hover:scale-105'} disabled:cursor-not-allowed`}
                     >
                         {refreshing ? '🔄 刷新中...' : '🔄 刷新'}
                     </button>
                     <button
+                        onClick={onReleaseMailbox}
+                        disabled={actionLoading}
+                        className={`px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition transform ${actionLoading ? 'opacity-70 cursor-not-allowed' : 'hover:scale-105'}`}
+                        title="立刻释放该邮箱地址（删除邮箱和邮件），方便马上复用"
+                    >
+                        {actionLoading ? '🗑 释放中...' : '🗑 释放邮箱'}
+                    </button>
+                    <button
                         onClick={onNewMailbox}
+                        disabled={actionLoading}
                         className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 transition transform hover:scale-105"
                     >
                         ➕ 新邮箱

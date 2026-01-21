@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import DomainSelector from './DomainSelector';
 import PrefixInput from './PrefixInput';
 
-function MailboxCreator({ domains, defaultDomain, onCreateMailbox, loading }) {
+function MailboxCreator({ domains, defaultDomain, onCreateMailbox, onForceReuse, lastMailbox, loading }) {
     const [prefix, setPrefix] = useState('');
     const [selectedDomain, setSelectedDomain] = useState(defaultDomain || '');
     const [prefixError, setPrefixError] = useState(null);
@@ -26,6 +26,17 @@ function MailboxCreator({ domains, defaultDomain, onCreateMailbox, loading }) {
     const handleCreate = () => { if (prefix && !validatePrefix(prefix)) return; onCreateMailbox({ prefix: prefix || undefined, domain: selectedDomain }); };
     const handleRandomCreate = () => { onCreateMailbox({ prefix: undefined, domain: selectedDomain }); };
 
+    const desiredAddress = prefix ? `${prefix}@${selectedDomain}` : '';
+    const canForceReuse = Boolean(
+        onForceReuse
+        && prefix
+        && !prefixError
+        && lastMailbox?.id
+        && typeof lastMailbox?.address === 'string'
+        && desiredAddress.trim().toLowerCase() === lastMailbox.address.trim().toLowerCase()
+    );
+    const handleForceReuse = () => { if (prefix && !validatePrefix(prefix)) return; onForceReuse({ prefix, domain: selectedDomain }); };
+
     const previewAddress = prefix ? `${prefix}@${selectedDomain}` : `随机前缀@${selectedDomain}`;
 
     return (
@@ -42,6 +53,16 @@ function MailboxCreator({ domains, defaultDomain, onCreateMailbox, loading }) {
                     <button onClick={handleCreate} disabled={loading || (prefix && prefixError)} className="w-full bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         {loading ? '创建中...' : '🎯 创建临时邮箱'}
                     </button>
+                    {canForceReuse && (
+                        <button
+                            onClick={handleForceReuse}
+                            disabled={loading}
+                            className="w-full bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="先释放你上次创建的同地址邮箱，再用这个地址重新创建"
+                        >
+                            {loading ? '处理中...' : '♻️ 一键复用（释放占用）'}
+                        </button>
+                    )}
                     <button onClick={handleRandomCreate} disabled={loading} className="w-full bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed">
                         {loading ? '创建中...' : '🎲 随机生成邮箱'}
                     </button>
